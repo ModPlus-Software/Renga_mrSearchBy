@@ -1,0 +1,266 @@
+﻿<mps:ModPlusWindow
+    x:Class="mrSearchBy.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:mps="https://modplus.org/winfx/xaml/controls"
+    xmlns:mrSearchBy="clr-namespace:mrSearchBy"
+    xmlns:apiConverters="clr-namespace:ModPlusAPI.Converters;assembly=ModPlusAPI"
+    xmlns:model="clr-namespace:mrSearchBy.Model"
+    xmlns:enums="clr-namespace:mrSearchBy.Enums"
+    xmlns:converters="clr-namespace:mrSearchBy.Converters"
+    mc:Ignorable="d"
+    Width="500" MinWidth="300" Height="220" MinHeight="220"
+    ResizeMode="CanResizeWithGrip" Topmost="True"
+    d:DataContext="{d:DesignInstance mrSearchBy:MainViewModel, IsDesignTimeCreatable=False}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/ModPlusStyle;component/Styles/Controls.xaml"></ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+            <XmlDataProvider x:Key="Lang" Source="E:/ModPlus/Languages/en-US.xml" XPath="ModPlus/mrSearchBy"></XmlDataProvider>
+            <apiConverters:EnumToIntConverter x:Key="EnumToIntConverter"/>
+            <converters:QuantityUnitConverter x:Key="QuantityUnitConverter"/>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.Resources>
+            <Style TargetType="{x:Type TextBlock}">
+                <Setter Property="Margin" Value="{DynamicResource ModPlusDefaultMargin}"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+        </Grid.Resources>
+
+        <!-- object type filter -->
+        <TextBlock Grid.Column="0" Grid.Row="0"
+                   Text="{Binding Source={StaticResource Lang}, XPath=h1}"/>
+        <ComboBox Grid.Column="1" Grid.Row="0"
+                  ItemsSource="{Binding Path=ObjectTypes}"
+                  SelectedItem="{Binding Path=ObjectTypeFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate DataType="model:LocalizableObjectType">
+                    <TextBlock Text="{Binding Path=DisplayName}" Margin="0"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <!-- search in -->
+        <TextBlock Grid.Column="0" Grid.Row="1"
+                   Text="{Binding Source={StaticResource Lang}, XPath=h2}"/>
+        <WrapPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
+            <CheckBox Content="{Binding Source={StaticResource Lang}, XPath=h3}"
+                      IsChecked="{Binding Path=SearchByProperties, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <CheckBox Content="{Binding Source={StaticResource Lang}, XPath=h4}"
+                      IsChecked="{Binding Path=SearchByParameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <StackPanel Orientation="Horizontal">
+                <CheckBox Content="{Binding Source={StaticResource Lang}, XPath=h5}"
+                          IsChecked="{Binding Path=SearchByQuantities, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Style="{DynamicResource ModPlusFlatButton}" Padding="2" Name="BtQuantityMap"
+                        Margin="0 0 4 0" MinHeight="0" MinWidth="0" Click="BtQuantityMap_OnClick"
+                        IsEnabled="{Binding Path=SearchByQuantities}">
+                    <Viewbox Width="24" Height="24">
+                        <Canvas Width="24" Height="24">
+                            <Path Fill="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Button}, Path=Foreground}" 
+                              Data="M2,6V8H14V6H2M2,10V12H14V10H2M20.04,10.13C19.9,10.13 19.76,10.19 19.65,10.3L18.65,11.3L20.7,13.35L21.7,12.35C21.92,12.14 21.92,11.79 21.7,11.58L20.42,10.3C20.31,10.19 20.18,10.13 20.04,10.13M18.07,11.88L12,17.94V20H14.06L20.12,13.93L18.07,11.88M2,14V16H10V14H2Z" />
+                        </Canvas>
+                    </Viewbox>
+                </Button>
+                <Popup PlacementTarget="{Binding ElementName=BtQuantityMap}" StaysOpen="False"
+                       AllowsTransparency="True" Name="PopupQuantityMap">
+                    <mps:Card Background="{DynamicResource WhiteBrush}">
+                        <Grid DataContext="{Binding Path=QuantityMap}" Margin="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                                       HorizontalAlignment="Center" FontWeight="SemiBold"
+                                       Text="{Binding Source={StaticResource Lang}, XPath=h6}"
+                                       ToolTip="{Binding Source={StaticResource Lang}, XPath=t1}"
+                                       ToolTipService.InitialShowDelay="0"
+                                       ToolTipService.ShowDuration="15000"
+                                       Margin="{DynamicResource ModPlusDefaultMargin}"/>
+
+                            <!-- Length -->
+                            <TextBlock Grid.Row="1" Grid.Column="0"
+                                       Text="{Binding Source={StaticResource Lang}, XPath=qh1}"/>
+                            <ComboBox Grid.Row="1" Grid.Column="1"
+                                      ItemsSource="{Binding Path=LengthUnits}"
+                                      SelectedItem="{Binding Path=LengthUnit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource QuantityUnitConverter}}" Margin="0"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <!-- Area -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" 
+                                       Text="{Binding Source={StaticResource Lang}, XPath=qh1}"/>
+                            <ComboBox Grid.Row="2" Grid.Column="1"
+                                      ItemsSource="{Binding Path=AreaUnits}"
+                                      SelectedItem="{Binding Path=AreaUnit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource QuantityUnitConverter}}" Margin="0"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <!-- Mass -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" 
+                                       Text="{Binding Source={StaticResource Lang}, XPath=qh3}"/>
+                            <ComboBox Grid.Row="3" Grid.Column="1"
+                                      ItemsSource="{Binding Path=MassUnits}"
+                                      SelectedItem="{Binding Path=MassUnit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource QuantityUnitConverter}}" Margin="0"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <!-- Volume -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" 
+                                       Text="{Binding Source={StaticResource Lang}, XPath=qh4}"/>
+                            <ComboBox Grid.Row="4" Grid.Column="1"
+                                      ItemsSource="{Binding Path=VolumeUnits}"
+                                      SelectedItem="{Binding Path=VolumeUnit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource QuantityUnitConverter}}" Margin="0"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <!-- Tolerance -->
+                            <TextBlock Grid.Row="5" Grid.Column="0" 
+                                       Text="{Binding Source={StaticResource Lang}, XPath=qh5}"/>
+                            <ComboBox Grid.Row="5" Grid.Column="1"
+                                      ItemsSource="{Binding Path=Tolerances}"
+                                      SelectedItem="{Binding Path=Tolerance, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </Grid>
+                    </mps:Card>
+                </Popup>
+            </StackPanel>
+        </WrapPanel>
+
+        <!-- match type -->
+        <TextBlock Grid.Column="0" Grid.Row="2"
+                   Text="{Binding Source={StaticResource Lang}, XPath=h7}"/>
+        <Grid Grid.Column="1" Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ComboBox Grid.Column="0"
+                      SelectedIndex="{Binding Path=MatchType, Mode=TwoWay, 
+            UpdateSourceTrigger=PropertyChanged, Converter={StaticResource EnumToIntConverter},
+            ConverterParameter={x:Type enums:MatchType}}">
+                <!-- Equal -->
+                <ComboBoxItem Content="{Binding Source={StaticResource Lang}, XPath=m1}"/>
+                <!-- Contain -->
+                <ComboBoxItem Content="{Binding Source={StaticResource Lang}, XPath=m2}"/>
+            </ComboBox>
+            <Grid Grid.Column="1" Background="Transparent"
+                  ToolTip="{Binding Source={StaticResource Lang}, XPath=t2}"
+                  ToolTipService.InitialShowDelay="0"
+                  ToolTipService.ShowDuration="15000">
+                <Viewbox Width="24" Height="24" Margin="0 0 4 0">
+                    <Canvas Width="24" Height="24">
+                        <Path Fill="{DynamicResource AccentColorBrush}" 
+                              Data="M11,18H13V16H11V18M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,6A4,4 0 0,0 8,10H10A2,2 0 0,1 12,8A2,2 0 0,1 14,10C14,12 11,11.75 11,15H13C13,12.75 16,12.5 16,10A4,4 0 0,0 12,6Z" />
+                    </Canvas>
+                </Viewbox>
+            </Grid>
+        </Grid>
+
+        <!-- search string -->
+        <TextBlock Grid.Column="0" Grid.Row="3"
+                   Text="{Binding Source={StaticResource Lang}, XPath=h8}"/>
+        <Grid Grid.Column="1" Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" MaxLength="100"
+                     Text="{Binding Path=SearchValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <Grid Grid.Column="1" Background="Transparent"
+                  ToolTipService.InitialShowDelay="0"
+                  ToolTipService.ShowDuration="120000">
+                <Grid.Resources>
+                    <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource ModPlusToolTip}">
+                        <Setter Property="MaxWidth" Value="600"/>
+                    </Style>
+                </Grid.Resources>
+                <Grid.ToolTip>
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel.Resources>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="TextWrapping" Value="Wrap"/>
+                                <Setter Property="Margin" Value="{DynamicResource ModPlusDefaultMargin}"/>
+                            </Style>
+                        </StackPanel.Resources>
+                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t3}"/>
+                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t4}"/>
+                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t5}"/>
+                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t6}"/>
+                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t7}"/>
+                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t8}"/>
+                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t9}"/>
+                    </StackPanel>
+                </Grid.ToolTip>
+                <Viewbox Width="24" Height="24" Margin="0 0 4 0">
+                    <Canvas Width="24" Height="24">
+                        <Path Fill="{DynamicResource AccentColorBrush}" 
+                              Data="M11,18H13V16H11V18M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,6A4,4 0 0,0 8,10H10A2,2 0 0,1 12,8A2,2 0 0,1 14,10C14,12 11,11.75 11,15H13C13,12.75 16,12.5 16,10A4,4 0 0,0 12,6Z" />
+                    </Canvas>
+                </Viewbox>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <!-- unselect -->
+            <CheckBox Grid.Column="0" 
+                      IsChecked="{Binding Path=UnselectIfNotFound, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      Content="{Binding Source={StaticResource Lang}, XPath=h9}"/>
+
+            <!-- start search -->
+            <Button Grid.Column="1" 
+                    IsEnabled="{Binding Path=IsEnableSearch}"
+                    Command="{Binding Path=SearchCommand}"
+                    Content="{Binding Source={StaticResource Lang}, XPath=h10}"/>
+        </Grid>
+
+        <!-- search status -->
+        <TextBlock Grid.Column="0" Grid.Row="6" Grid.ColumnSpan="2"
+                   FontSize="10" HorizontalAlignment="Right" Margin="0 0 16 4"
+                   Text="{Binding Path=SearchStatus, UpdateSourceTrigger=PropertyChanged}"/>
+    </Grid>
+</mps:ModPlusWindow>
