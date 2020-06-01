@@ -1,6 +1,7 @@
 ﻿namespace mrSearchBy
 {
     using System.Windows;
+    using System.Windows.Input;
 
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
@@ -52,6 +53,11 @@
         private void BtQuantityMap_OnClick(object sender, RoutedEventArgs e)
         {
             PopupQuantityMap.IsOpen = !PopupQuantityMap.IsOpen;
+        }
+
+        private void GridSearchHelp_OnMouseEnter(object sender, MouseEventArgs e)
+        {
+            PopupSearchHelp.IsOpen = true;
         }
     }
 }

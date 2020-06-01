@@ -10,6 +10,7 @@
     xmlns:model="clr-namespace:mrSearchBy.Model"
     xmlns:enums="clr-namespace:mrSearchBy.Enums"
     xmlns:converters="clr-namespace:mrSearchBy.Converters"
+    xmlns:ts="https://modplus.org/winfx/xaml/transitionz"
     mc:Ignorable="d"
     Width="500" MinWidth="300" Height="220" MinHeight="220"
     ResizeMode="CanResizeWithGrip" Topmost="True"
@@ -81,8 +82,10 @@
                 </Button>
                 <Popup PlacementTarget="{Binding ElementName=BtQuantityMap}" StaysOpen="False"
                        AllowsTransparency="True" Name="PopupQuantityMap">
-                    <mps:Card Background="{DynamicResource WhiteBrush}">
-                        <Grid DataContext="{Binding Path=QuantityMap}" Margin="12">
+                    <mps:Card Background="{DynamicResource WhiteBrush}" Padding="{DynamicResource ModPlusDefaultMargin}"
+                              ts:Transitions.Opacity="{ts:OpacityParams From=0, To=1, Duration=300, TransitionOn=Loaded}"
+                              ts:Transitions.Translate="{ts:TranslateParams From='0,-20', To='0,0', Duration=300, TransitionOn=Loaded}">
+                        <Grid DataContext="{Binding Path=QuantityMap}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -208,30 +211,31 @@
             <TextBox Grid.Column="0" MaxLength="100"
                      Text="{Binding Path=SearchValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
             <Grid Grid.Column="1" Background="Transparent"
-                  ToolTipService.InitialShowDelay="0"
-                  ToolTipService.ShowDuration="120000">
-                <Grid.Resources>
-                    <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource ModPlusToolTip}">
-                        <Setter Property="MaxWidth" Value="600"/>
-                    </Style>
-                </Grid.Resources>
-                <Grid.ToolTip>
-                    <StackPanel Orientation="Vertical">
-                        <StackPanel.Resources>
-                            <Style TargetType="{x:Type TextBlock}">
-                                <Setter Property="TextWrapping" Value="Wrap"/>
-                                <Setter Property="Margin" Value="{DynamicResource ModPlusDefaultMargin}"/>
-                            </Style>
-                        </StackPanel.Resources>
-                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t3}"/>
-                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t4}"/>
-                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t5}"/>
-                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t6}"/>
-                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t7}"/>
-                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t8}"/>
-                        <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t9}"/>
-                    </StackPanel>
-                </Grid.ToolTip>
+                  Name="GridSearchHelp" MouseEnter="GridSearchHelp_OnMouseEnter">
+                <Popup Placement="Mouse" AllowsTransparency="True" Name="PopupSearchHelp" StaysOpen="False">
+                    <mps:Card MaxWidth="600" Padding="{DynamicResource ModPlusDefaultMargin}"
+                              ts:Transitions.Opacity="{ts:OpacityParams From=0, To=1, Duration=300, TransitionOn=Loaded}"
+                              ts:Transitions.Translate="{ts:TranslateParams From='0,-20', To='0,0', Duration=300, TransitionOn=Loaded}">
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel.Resources>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                    <Setter Property="Margin" Value="{DynamicResource ModPlusDefaultMargin}"/>
+                                </Style>
+                            </StackPanel.Resources>
+                            <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t3}"/>
+                            <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t4}"/>
+                            <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t5}"/>
+                            <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t6}"/>
+                            <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t7}"/>
+                            <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t8}"/>
+                            <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t9}"/>
+                            <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t10}"/>
+                            <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t11}"/>
+                            <TextBlock Text="{Binding Source={StaticResource Lang}, XPath=t12}"/>
+                        </StackPanel>
+                    </mps:Card>
+                </Popup>
                 <Viewbox Width="24" Height="24" Margin="0 0 4 0">
                     <Canvas Width="24" Height="24">
                         <Path Fill="{DynamicResource AccentColorBrush}" 
