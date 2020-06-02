@@ -56,6 +56,7 @@
                     return;
                 _searchValue = value;
                 OnPropertyChanged();
+                SearchStatus = string.Empty;
                 IsEnableSearch = !string.IsNullOrEmpty(value);
             }
         }

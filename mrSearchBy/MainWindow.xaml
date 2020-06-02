@@ -12,7 +12,7 @@
     xmlns:converters="clr-namespace:mrSearchBy.Converters"
     xmlns:ts="https://modplus.org/winfx/xaml/transitionz"
     mc:Ignorable="d"
-    Width="500" MinWidth="300" Height="220" MinHeight="220"
+    Width="500" MinWidth="300" Height="250" MinHeight="250"
     ResizeMode="CanResizeWithGrip" Topmost="True"
     d:DataContext="{d:DesignInstance mrSearchBy:MainViewModel, IsDesignTimeCreatable=False}">
     <Window.Resources>
