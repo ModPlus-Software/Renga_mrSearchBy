@@ -40,7 +40,7 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="Renga.NET.PluginUtility, Version=2.9.11863.46398, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\_RengaSDK\Net\Renga.NET.PluginUtility.dll</HintPath>
+      <HintPath>C:\RengaSDK\Net\Renga.NET.PluginUtility.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -53,17 +53,6 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="Renga">
-      <Guid>{0EC5D324-8B9F-4D30-84ED-AB711618D1C1}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Converters\QuantityUnitConverter.cs" />
@@ -103,7 +92,17 @@
   <ItemGroup>
     <Resource Include="Resources\mrSearchBy_32x32.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <COMReference Include="Renga">
+      <Guid>{0EC5D324-8B9F-4D30-84ED-AB711618D1C1}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icons\mrSearchBy_16x16.png" />
     <EmbeddedResource Include="Icons\mrSearchBy_24x24.png" />

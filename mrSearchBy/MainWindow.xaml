@@ -71,8 +71,7 @@
                 <CheckBox Content="{Binding Source={StaticResource Lang}, XPath=h5}"
                           IsChecked="{Binding Path=SearchByQuantities, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 <Button Style="{DynamicResource ModPlusFlatButton}" Padding="2" Name="BtQuantityMap"
-                        Margin="0 0 4 0" MinHeight="0" MinWidth="0" Click="BtQuantityMap_OnClick"
-                        IsEnabled="{Binding Path=SearchByQuantities}">
+                        Margin="0 0 4 0" MinHeight="0" MinWidth="0" Click="BtQuantityMap_OnClick">
                     <Viewbox Width="24" Height="24">
                         <Canvas Width="24" Height="24">
                             <Path Fill="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Button}, Path=Foreground}" 
@@ -249,6 +248,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <!-- unselect -->
             <CheckBox Grid.Column="0" 
@@ -260,6 +260,12 @@
                     IsEnabled="{Binding Path=IsEnableSearch}"
                     Command="{Binding Path=SearchCommand}"
                     Content="{Binding Source={StaticResource Lang}, XPath=h10}"/>
+            <Button Grid.Column="2" 
+                    Content="{Binding Source={StaticResource Lang}, XPath=h13}"
+                    ToolTip="{Binding Source={StaticResource Lang}, XPath=t13}"
+                    IsEnabled="{Binding Path=IsEnableShow}"
+                    Visibility="{Binding Path=ShowButtonVisibility}"
+                    Command="{Binding Path=ShowCommand}"></Button>
         </Grid>
 
         <!-- search status -->

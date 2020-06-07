@@ -6,6 +6,8 @@
     using System.Linq;
     using Enums;
     using Model;
+    using ModPlus.Helpers;
+    using Renga;
 
     /// <summary>
     /// Объект, инкапсулирующий в себе работу с поисковым значением
@@ -18,10 +20,10 @@
         private readonly List<Value> _searchDoubleValues;
         private readonly List<Value> _searchIntValues;
         private readonly List<Value> _searchBoolValues;
-        private readonly Renga.LengthUnit _lengthUnit;
-        private readonly Renga.MassUnit _massUnit;
-        private readonly Renga.AreaUnit _areaUnit;
-        private readonly Renga.VolumeUnit _volumeUnit;
+        private readonly LengthUnit _lengthUnit;
+        private readonly MassUnit _massUnit;
+        private readonly AreaUnit _areaUnit;
+        private readonly VolumeUnit _volumeUnit;
 
         // Поисковые значение без операторов и управляющих символов
         private readonly List<string> _searchValues;
@@ -144,27 +146,39 @@
         /// </summary>
         /// <param name="property">Свойство</param>
         /// <param name="matchValue">Совпавшее строковое значение из исходной поисковой строки, без учета операторов</param>
-        public bool IsMatch(Renga.IProperty property, out string matchValue)
+        public bool IsMatch(IProperty property, out string matchValue)
         {
             matchValue = string.Empty;
-            if (property.Type != Renga.PropertyType.PropertyType_String && !property.HasValue())
+            if (property.Type != PropertyType.PropertyType_String && !property.HasValue())
                 return false;
 
-            if (property.Type == Renga.PropertyType.PropertyType_Double)
+            switch (property.Type)
             {
-                var doubleValue = property.GetDoubleValue();
-                Debug.Print($"Double property {property.Name}: {doubleValue}");
-                return IsMatch(doubleValue, property.Name, out matchValue);
+                case PropertyType.PropertyType_Double:
+                    return IsMatch(property.GetDoubleValue(), property.Name, out matchValue);
+                case PropertyType.PropertyType_String:
+                    return IsMatch(property.GetStringValue()?.ToUpper() ?? string.Empty, property.Name, out matchValue);
+                case PropertyType.PropertyType_Angle:
+                    return IsMatch(property.GetAngleValue(AngleUnit.AngleUnit_Degrees), property.Name, out matchValue);
+                case PropertyType.PropertyType_Boolean:
+                    return IsMatch(property.GetBooleanValue(), property.Name, out matchValue);
+                case PropertyType.PropertyType_Area:
+                    return IsMatch(property.GetAreaValue(_areaUnit), property.Name, out matchValue);
+                case PropertyType.PropertyType_Integer:
+                    return IsMatch(property.GetIntegerValue(), property.Name, out matchValue);
+                case PropertyType.PropertyType_Length:
+                    return IsMatch(property.GetLengthValue(_lengthUnit), property.Name, out matchValue);
+                case PropertyType.PropertyType_Logical:
+                    return IsMatch(ModPlusAPI.Language.GetItem("RengaDlls", property.GetLogicalValue().ToString()), property.Name, out matchValue);
+                case PropertyType.PropertyType_Mass:
+                    return IsMatch(property.GetMassValue(_massUnit), property.Name, out matchValue);
+                case PropertyType.PropertyType_Volume:
+                    return IsMatch(property.GetVolumeValue(_volumeUnit), property.Name, out matchValue);
+                case PropertyType.PropertyType_Enumeration:
+                    return IsMatch(property.GetEnumerationValue() ?? string.Empty, property.Name, out matchValue);
+                default:
+                    return false;
             }
-
-            if (property.Type == Renga.PropertyType.PropertyType_String)
-            {
-                var stringValue = property.GetStringValue()?.ToUpper() ?? string.Empty;
-                Debug.Print($"String property {property.Name}: {stringValue}");
-                return IsMatch(stringValue, property.Name, out matchValue);
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -172,38 +186,22 @@
         /// </summary>
         /// <param name="parameter">Параметр</param>
         /// <param name="matchValue">Совпавшее строковое значение из исходной поисковой строки, без учета операторов</param>
-        public bool IsMatch(Renga.IParameter parameter, out string matchValue)
+        public bool IsMatch(IParameter parameter, out string matchValue)
         {
-            if (parameter.ValueType == Renga.ParameterValueType.ParameterValueType_Int)
+            switch (parameter.ValueType)
             {
-                var intValue = parameter.GetIntValue();
-                Debug.Print($"Int parameter {parameter.Definition.Name}: {intValue}");
-                return IsMatch(intValue, parameter.Definition.Name, out matchValue);
+                case ParameterValueType.ParameterValueType_Int:
+                    return IsMatch(parameter.GetIntValue(), parameter.Definition.Name, out matchValue);
+                case ParameterValueType.ParameterValueType_Double:
+                    return IsMatch(parameter.GetDoubleValue(), parameter.Definition.Name, out matchValue);
+                case ParameterValueType.ParameterValueType_Bool:
+                    return IsMatch(parameter.GetBoolValue(), parameter.Definition.Name, out matchValue);
+                case ParameterValueType.ParameterValueType_String:
+                    return IsMatch(parameter.GetStringValue()?.ToUpper() ?? string.Empty, parameter.Definition.Name, out matchValue);
+                default:
+                    matchValue = string.Empty;
+                    return false;
             }
-
-            if (parameter.ValueType == Renga.ParameterValueType.ParameterValueType_Double)
-            {
-                var doubleValue = parameter.GetDoubleValue();
-                Debug.Print($"Double parameter {parameter.Definition.Name}: {doubleValue}");
-                return IsMatch(doubleValue, parameter.Definition.Name, out matchValue);
-            }
-
-            if (parameter.ValueType == Renga.ParameterValueType.ParameterValueType_Bool)
-            {
-                var boolValue = parameter.GetBoolValue();
-                Debug.Print($"Bool parameter {parameter.Definition.Name}: {boolValue}");
-                return IsMatch(boolValue, parameter.Definition.Name, out matchValue);
-            }
-
-            if (parameter.ValueType == Renga.ParameterValueType.ParameterValueType_String)
-            {
-                var stringValue = parameter.GetStringValue()?.ToUpper() ?? string.Empty;
-                Debug.Print($"String parameter {parameter.Definition.Name}: {stringValue}");
-                return IsMatch(stringValue, parameter.Definition.Name, out matchValue);
-            }
-
-            matchValue = string.Empty;
-            return false;
         }
 
         /// <summary>
@@ -212,45 +210,24 @@
         /// <param name="quantity">Величина</param>
         /// <param name="name">Имя расчетной характеристики</param>
         /// <param name="matchValue">Совпавшее строковое значение из исходной поисковой строки, без учета операторов</param>
-        public bool IsMatch(Renga.IQuantity quantity, string name, out string matchValue)
+        public bool IsMatch(IQuantity quantity, string name, out string matchValue)
         {
-            if (quantity.Type == Renga.QuantityType.QuantityType_Area)
+            switch (quantity.Type)
             {
-                var area = quantity.AsArea(_areaUnit);
-                Debug.Print($"Area quantity {area}");
-                return IsMatch(area, name, out matchValue);
+                case QuantityType.QuantityType_Area:
+                    return IsMatch(quantity.AsArea(_areaUnit), name, out matchValue);
+                case QuantityType.QuantityType_Count:
+                    return IsMatch(quantity.AsCount(), name, out matchValue);
+                case QuantityType.QuantityType_Length:
+                    return IsMatch(quantity.AsLength(_lengthUnit), name, out matchValue);
+                case QuantityType.QuantityType_Mass:
+                    return IsMatch(quantity.AsMass(_massUnit), name, out matchValue);
+                case QuantityType.QuantityType_Volume:
+                    return IsMatch(quantity.AsVolume(_volumeUnit), name, out matchValue);
+                default:
+                    matchValue = string.Empty;
+                    return false;
             }
-
-            if (quantity.Type == Renga.QuantityType.QuantityType_Count)
-            {
-                var count = quantity.AsCount();
-                Debug.Print($"Count quantity {count}");
-                return IsMatch(count, name, out matchValue);
-            }
-
-            if (quantity.Type == Renga.QuantityType.QuantityType_Length)
-            {
-                var length = quantity.AsLength(_lengthUnit);
-                Debug.Print($"Length quantity {length}");
-                return IsMatch(length, name, out matchValue);
-            }
-
-            if (quantity.Type == Renga.QuantityType.QuantityType_Mass)
-            {
-                var mass = quantity.AsMass(_massUnit);
-                Debug.Print($"Mass quantity {mass}");
-                return IsMatch(mass, name, out matchValue);
-            }
-
-            if (quantity.Type == Renga.QuantityType.QuantityType_Volume)
-            {
-                var volume = quantity.AsVolume(_volumeUnit);
-                Debug.Print($"Volume quantity {volume}");
-                return IsMatch(volume, name, out matchValue);
-            }
-
-            matchValue = string.Empty;
-            return false;
         }
 
         private bool IsMatch(int intValue, string name, out string matchValue)

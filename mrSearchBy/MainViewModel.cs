@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
+    using System.Windows;
     using System.Windows.Input;
     using Enums;
     using Model;
@@ -22,6 +23,7 @@
         private bool _isEnableSearch;
         private string _searchStatus;
         private readonly List<Guid> _quantityIds;
+        private List<Renga.IModelObject> _matchObjects;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MainViewModel"/> class.
@@ -42,6 +44,10 @@
             ObjectTypes = types;
 
             _quantityIds = new List<Guid>(typeof(Renga.QuantityIds).GetProperties().Select(p => (Guid)p.GetValue(null)));
+
+            ShowButtonVisibility = _rengaApplication.ActiveView.Type == Renga.ViewType.ViewType_View3D
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         /// <summary>
@@ -111,6 +117,16 @@
                 OnPropertyChanged();
             }
         }
+
+        /// <summary>
+        /// Доступность кнопки "Показать"
+        /// </summary>
+        public bool IsEnableShow => _matchObjects != null && _matchObjects.Any();
+
+        /// <summary>
+        /// Видимость кнопки "Показать"
+        /// </summary>
+        public Visibility ShowButtonVisibility { get; }
 
         /// <summary>
         /// Статус поиска
@@ -195,6 +211,26 @@
         /// </summary>
         public ICommand SearchCommand => new RelayCommandWithoutParameter(Search);
 
+        /// <summary>
+        /// Команда "Показать найденные объекты"
+        /// </summary>
+        public ICommand ShowCommand => new RelayCommandWithoutParameter(() =>
+        {
+            try
+            {
+                if (_rengaApplication.ActiveView.Type != Renga.ViewType.ViewType_View3D || !_matchObjects.Any())
+                    return;
+
+                var objectIds = _matchObjects.Select(o => o.Id).ToArray();
+                _rengaApplication.Selection.SetSelectedObjects(objectIds);
+                (_rengaApplication.ActiveView as Renga.IModelView)?.ShowObjects(objectIds);
+            }
+            catch (Exception exception)
+            {
+                ExceptionBox.Show(exception);
+            }
+        });
+
         private void Search()
         {
             try
@@ -213,7 +249,7 @@
 
                 var searchData = new SearchData(searchValue, MatchType, QuantityMap);
 
-                var matchObjects = new List<Renga.IModelObject>();
+                _matchObjects = new List<Renga.IModelObject>();
 
                 var objects = _rengaApplication.Project.Model.GetObjects();
                 for (var i = 0; i < objects.Count; i++)
@@ -246,7 +282,7 @@
                             }
                             else
                             {
-                                matchObjects.Add(modelObject);
+                                _matchObjects.Add(modelObject);
                                 searchNext = false;
                                 break;
                             }
@@ -270,7 +306,7 @@
                             }
                             else
                             {
-                                matchObjects.Add(modelObject);
+                                _matchObjects.Add(modelObject);
                                 searchNext = false;
                                 break;
                             }
@@ -294,7 +330,7 @@
                             }
                             else
                             {
-                                matchObjects.Add(modelObject);
+                                _matchObjects.Add(modelObject);
                                 break;
                             }
                         }
@@ -302,17 +338,17 @@
 
                     if (and && searchData.IsMatchAll(matchValues))
                     {
-                        matchObjects.Add(modelObject);
+                        _matchObjects.Add(modelObject);
                     }
                 }
 
                 var selection = _rengaApplication.Selection;
 
-                if (matchObjects.Any())
+                if (_matchObjects.Any())
                 {
                     // Найдено {0} объектов
-                    SearchStatus = string.Format(Language.GetItem(LangItem, "h11"), matchObjects.Count);
-                    selection.SetSelectedObjects(matchObjects.Select(o => o.Id).ToArray());
+                    SearchStatus = string.Format(Language.GetItem(LangItem, "h11"), _matchObjects.Count);
+                    selection.SetSelectedObjects(_matchObjects.Select(o => o.Id).ToArray());
                 }
                 else
                 {
@@ -321,6 +357,8 @@
                     if (UnselectIfNotFound)
                         selection.SetSelectedObjects(new int[] { });
                 }
+
+                OnPropertyChanged(nameof(IsEnableShow));
             }
             catch (Exception exception)
             {
