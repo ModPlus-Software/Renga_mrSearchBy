@@ -1,10 +1,11 @@
 ﻿namespace mrSearchBy
 {
     using System.Collections.Generic;
-    using ModPlusAPI.Interfaces;
+    using ModPlusAPI.Abstractions;
+    using ModPlusAPI.Enums;
 
     /// <inheritdoc/>
-    public class ModPlusConnector : IModPlusFunctionForRenga
+    public class ModPlusConnector : IModPlusPluginForRenga
     {
         private static ModPlusConnector _instance;
 
@@ -18,18 +19,15 @@
 
         /// <inheritdoc/>
         public string Name => "mrSearchBy";
+        
+        /// <inheritdoc/>
+        public RengaFunctionUILocation UiLocation => RengaFunctionUILocation.PrimaryPanel;
 
         /// <inheritdoc/>
-        public RengaProduct RengaProduct => RengaProduct.Any;
+        public RengaContextMenuShowCase ContextMenuShowCase => RengaContextMenuShowCase.Scene;
 
         /// <inheritdoc/>
-        public FunctionUILocation UiLocation => FunctionUILocation.PrimaryPanel;
-
-        /// <inheritdoc/>
-        public ContextMenuShowCase ContextMenuShowCase => ContextMenuShowCase.Scene;
-
-        /// <inheritdoc/>
-        public List<ViewType> ViewTypes => new List<ViewType>();
+        public List<RengaViewType> ViewTypes => new List<RengaViewType>();
 
         /// <inheritdoc/>
         public bool IsAddingToMenuBySelf => false;
